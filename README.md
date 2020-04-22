@@ -5,4 +5,5 @@ This is a repo that holds various bash commands that analyze data from the New Y
 TODO:
  - Add nytimes/covid-19 repo as a git submodule
  - Add percentage and absolute change values for each day
+ - This was written against the mawk verions of awk.  Need to test against gawk.
 
