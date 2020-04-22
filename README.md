@@ -6,4 +6,6 @@ TODO:
  - Add nytimes/covid-19 repo as a git submodule
  - Add percentage and absolute change values for each day
  - This was written against the mawk verions of awk.  Need to test against gawk.
+ - Make commands more readable.  Consider an awk file and bash scripts.
+ - Make any temporary files go to a tmp directory and add to .gitignore file.
 
