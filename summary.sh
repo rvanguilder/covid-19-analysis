@@ -1,0 +1,101 @@
+#!/bin/bash
+
+while getopts r:s:c: option
+do
+	case "${option}"
+	in
+		r) recordCount=${OPTARG};;
+		s) stateCount=${OPTARG};;
+		c) columns=${OPTARG};;
+	esac
+done
+
+if [ -z "$recordCount" ]
+then
+	recordCount=20
+	#echo "Hit recordCount"
+fi
+
+if [ -z "$stateCount" ]
+then
+	stateCount=23
+	#echo "Hit recordCount"
+fi
+
+if [ -z "$columns" ]
+then
+	columns=6
+fi
+
+#echo $recordCount
+#echo $stateCount
+
+totalSize=$(($stateCount + 1))
+
+mod=$(($totalSize % $columns))
+
+#echo $mod
+
+totalSize=$(($totalSize + $columns - mod))
+
+#echo $totalSize
+
+stateCount=$(($totalSize - 1))
+
+cat ./covid-19-data/us-states.csv | awk -F"," 'BEGIN{OFS="\t"}{a[$1];c[$1]+=$4;d[$1]+=$5}END{for (i in a)print i,c[i],d[i]}' | grep "2020-[0-9]\{2\}-[0-9]\{2\}" | sort | tail -n $(($recordCount + 1)) > ./tmp/us 
+
+cut -d$'\t' -f1 ./tmp/us | tail -n $recordCount | sed '1s/^/Date\t\n/' > ./tmp/dates 
+
+cut -d$'\t' -f2,3 ./tmp/us | awk -f add_single_delta.awk | tail -n $recordCount | sed '1s/^/United States\t\t\n/' > ./tmp/0 
+
+cat ./covid-19-data/us-states.csv | grep $(cat ./covid-19-data/us-states.csv | tail -n 1 | cut -d',' -f1) | awk -F"," '{print $1 "," $2 "," $4 "," $5}' | sort -t"," -k 3 -n -r | head -n $stateCount | cut -d',' -f2 | { 
+
+	j=0;
+
+	while read i; 
+		do let j=j+1; 
+		
+		cat ./covid-19-data/us-states.csv | awk -F"," -v state="$i" 'BEGIN{OFS="\t"}$2==state{a[$1];c[$1]+=$4;d[$1]+=$5}END{for (i in a)print i, c[i],d[i]}' | sort | cut -d$'\t' -f2,3 | awk -f add_single_delta.awk | tail -n $recordCount > ./tmp/$j; 
+
+		state_label="($j) $i"
+
+		state_length=$(expr length "$state_label"); 
+
+		#echo "$state_label $state_length"
+
+		if [ "$state_length" -le 15 ];
+		then
+			state_label="$state_label\t\t"; 
+		elif [ "$state_length" -le 19 ];
+		then
+			state_label="$state_label\t"; 
+		fi;
+
+		sed -i '1s/^/'"$state_label"'\n/' ./tmp/$j; 
+		
+	done; 
+
+	rows=$(($totalSize / columns));
+	
+	tempDir="./tmp/"
+
+	counter=0;
+
+	for (( k=0; k<$rows; k++))
+	do
+		params1="./tmp/dates ";
+
+		for (( m=0; m<$columns; m++ ))
+		do
+			params1="$params1$tempDir$counter "			
+			counter=$(($counter + 1))
+		done
+
+		paste $params1;
+
+		printf "\n\n"
+	done
+
+} | less 
+
+
