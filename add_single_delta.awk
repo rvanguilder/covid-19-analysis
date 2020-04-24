@@ -4,10 +4,6 @@ BEGIN{
 	OFS="\t"
 }
 {
-	#if(NR==1) {
-	#	printf $0 "\t" "D_C" "\t" "\t" "D_D" "\n"
-	#}
-	#else 
 	if(NR==1) {
 		change_in_cases=0
 		change_in_deaths=0

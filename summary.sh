@@ -1,12 +1,13 @@
 #!/bin/bash
 
-while getopts r:s:c: option
+while getopts r:s:c:o: option
 do
 	case "${option}"
 	in
 		r) recordCount=${OPTARG};;
 		s) stateCount=${OPTARG};;
 		c) columns=${OPTARG};;
+		o) order_by=${OPTARG};;
 	esac
 done
 
@@ -25,6 +26,18 @@ fi
 if [ -z "$columns" ]
 then
 	columns=6
+fi
+
+order_by_field=3
+if [ -z "$order_by" ]
+then
+	order_by="c"
+fi
+
+if [ "$order_by" == "d" ]
+then
+	order_by_field=4
+	echo "Ordering by deaths"
 fi
 
 #echo $recordCount
@@ -46,9 +59,9 @@ cat ./covid-19-data/us-states.csv | awk -F"," 'BEGIN{OFS="\t"}{a[$1];c[$1]+=$4;d
 
 cut -d$'\t' -f1 ./tmp/us | tail -n $recordCount | sed '1s/^/Date\t\n/' > ./tmp/dates 
 
-cut -d$'\t' -f2,3 ./tmp/us | awk -f add_single_delta.awk | tail -n $recordCount | sed '1s/^/United States\t\t\n/' > ./tmp/0 
+cut -d$'\t' -f2,3 ./tmp/us | sort -t"," -k 2 -n | awk -f add_single_delta.awk | tail -n $recordCount | sed '1s/^/United States\t\t\n/' > ./tmp/0 
 
-cat ./covid-19-data/us-states.csv | grep $(cat ./covid-19-data/us-states.csv | tail -n 1 | cut -d',' -f1) | awk -F"," '{print $1 "," $2 "," $4 "," $5}' | sort -t"," -k 3 -n -r | head -n $stateCount | cut -d',' -f2 | { 
+cat ./covid-19-data/us-states.csv | grep $(cat ./covid-19-data/us-states.csv | tail -n 1 | cut -d',' -f1) | awk -F"," '{print $1 "," $2 "," $4 "," $5}' | sort -t"," -k $order_by_field -n -r | head -n $stateCount | cut -d',' -f2 | { 
 
 	j=0;
 
