@@ -2,19 +2,28 @@
 
 tempDir=$(mktemp -d "${TMPDIR:-/tmp/}$(basename $0).XXXXXXXXXX")
 tempDir=$tempDir"/"
+#tempDir="./tmp/"
 
-#echo "Temp directory create at "$tempDir
+echo "Temp directory create at "$tempDir
 
 while getopts r:s:c:o: option
 do
 	case "${option}"
 	in
 		r) recordCount=${OPTARG};;
-		s) stateCount=${OPTARG};;
+		s) state=${OPTARG};;
+		d) countyCount=${OPTARG};;
 		c) columns=${OPTARG};;
 		o) order_by=${OPTARG};;
 	esac
 done
+
+if [ -z "$state" ]
+then
+	state="Colorado"
+fi
+
+echo $state
 
 if [ -z "$recordCount" ]
 then
@@ -22,9 +31,9 @@ then
 	#echo "Hit recordCount"
 fi
 
-if [ -z "$stateCount" ]
+if [ -z "$countyCount" ]
 then
-	stateCount=53
+	countyCount=53
 	#echo "Hit recordCount"
 fi
 
@@ -50,9 +59,9 @@ then
 fi
 
 #echo $recordCount
-#echo $stateCount
+#echo $countyCount
 
-totalSize=$(($stateCount + 1))
+totalSize=$(($countyCount + 1))
 
 mod=$(($totalSize % $columns))
 
@@ -62,22 +71,23 @@ totalSize=$(($totalSize + $columns - mod))
 
 #echo $totalSize
 
-stateCount=$(($totalSize - 1))
+countyCount=$(($totalSize - 1))
 
-cat ./covid-19-data/us-states.csv | awk -F"," 'BEGIN{OFS="\t"}{a[$1];c[$1]+=$4;d[$1]+=$5}END{for (i in a)print i,c[i],d[i]}' | grep "2020-[0-9]\{2\}-[0-9]\{2\}" | sort | tail -n $(($recordCount + 1)) > "$tempDir"us 
+cat ./covid-19-data/us-counties.csv | awk -F',' -v state="$state" 'BEGIN{OFS=","}$3==state{print $0}' | awk -F"," 'BEGIN{OFS="\t"}{a[$1];c[$1]+=$5;d[$1]+=$6}END{for (i in a)print i,c[i],d[i]}' | grep "2020-[0-9]\{2\}-[0-9]\{2\}" | sort | tail -n $(($recordCount + 1)) > "$tempDir"state 
 
-cut -d$'\t' -f1 "$tempDir"us | tail -n $recordCount | sed '1s/^/Date\t\n/' > "$tempDir"dates 
+cut -d$'\t' -f1 "$tempDir"state | tail -n $recordCount | sed '1s/^/Date\t\n/' > "$tempDir"dates 
 
-cut -d$'\t' -f2,3 "$tempDir"us | sort -t"," -k 2 -n | awk -f add_single_delta.awk | tail -n $recordCount | sed '1s/^/United States\t\t\n/' > "$tempDir"0 
+cut -d$'\t' -f2,3 "$tempDir"state | sort -k 2 -n | awk -f add_single_delta.awk | tail -n $recordCount | sed '1s/^/'"$state"'\t\t\n/' > "$tempDir"0 
 
-cat ./covid-19-data/us-states.csv | grep $(cat ./covid-19-data/us-states.csv | tail -n 1 | cut -d',' -f1) | awk -F"," '{print $1 "," $2 "," $4 "," $5}' | sort -t"," -k $order_by_field -n -r | head -n $stateCount | cut -d',' -f2 | { 
+cat ./covid-19-data/us-counties.csv | awk -F',' -v state="$state" '$3==state{print $0}' | grep $(cat ./covid-19-data/us-counties.csv | tail -n 1 | cut -d',' -f1) | awk -F"," '{print $1 "," $2 "," $5 "," $6}' | sort -t"," -k $order_by_field -n -r | head -n $countyCount | cut -d',' -f2 | { 
 
 	j=0;
 
 	while read i; 
 		do let j=j+1; 
-		
-		cat ./covid-19-data/us-states.csv | awk -F"," -v state="$i" 'BEGIN{OFS="\t"}$2==state{a[$1];c[$1]+=$4;d[$1]+=$5}END{for (i in a)print i, c[i],d[i]}' | sort | cut -d$'\t' -f2,3 | awk -f add_single_delta.awk | tail -n $recordCount > "$tempDir"$j; 
+	
+		#print "$state - $i"	
+		cat ./covid-19-data/us-counties.csv | awk -F"," -v state="$state" -v county="$i" 'BEGIN{OFS="\t"} $2==county && $3==state {a[$1];c[$1]+=$5;d[$1]+=$6}END{for (i in a)print i, c[i],d[i]}' | sort | cut -d$'\t' -f2,3 | awk -f add_single_delta.awk | tail -n $recordCount > "$tempDir"$j; 
 
 		state_label="($j) $i"
 

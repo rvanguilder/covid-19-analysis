@@ -15,7 +15,18 @@ git submodule update --remote
 
 # Examples
  - ./summary.sh
+ - ./summary.sh -r 7
  - ./summary.sh -r 15 -s 20 -c 6 -o d
+
+ - ./counties.sh -s "Colorado"
+ - ./counters.sh -r 7 -s "Minnesota"
+
+ - ./state_summary.sh -s Colorado
+
+ - ./us_totals_only.sh 
+ - ./us_totals_only.sh -s d
+ - ./us_totals_only.sh -s a
+
 
 ## optional arguments
  - -r => show last 15 days
@@ -25,10 +36,10 @@ git submodule update --remote
 
 # TODO
  - Add percentage and absolute change values for each day
- - This was written against the mawk verions of awk.  Need to test against gawk.
  - Make commands more readable.  Consider an awk file and more bash scripts.
  - Parameterize commands to allow desired output columns
  - Add percentage for percent change to total number
  - Allow sort absolute and percent changed
  - what is the version of linux, awk, etc. for Chromebook, container, WSL, etc.
+ - Script out other scripts that are in the summary_view file
 
