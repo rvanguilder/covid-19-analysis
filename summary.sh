@@ -1,7 +1,9 @@
 #!/bin/bash
 
-tempDir=$(mktemp -d "${TMPDIR:-/tmp/}$(basename $0).XXXXXXXXXX")
-tempDir=$tempDir"/"
+#tempDir=$(mktemp -d "${TMPDIR:-/tmp/}$(basename $0).XXXXXXXXXX")
+#tempDir=$tempDir"/"
+
+tempDir="./tmp/"
 
 #echo "Temp directory create at "$tempDir
 
@@ -68,7 +70,7 @@ cat ./covid-19-data/us-states.csv | awk -F"," 'BEGIN{OFS="\t"}{a[$1];c[$1]+=$4;d
 
 cut -d$'\t' -f1 "$tempDir"us | tail -n $recordCount | sed '1s/^/Date\t\n/' > "$tempDir"dates 
 
-cut -d$'\t' -f2,3 "$tempDir"us | sort -t"," -k 2 -n | awk -f add_single_delta.awk | tail -n $recordCount | sed '1s/^/United States\t\t\n/' > "$tempDir"0 
+cut -d$'\t' -f2,3 "$tempDir"us | awk -f add_single_delta.awk | tail -n $recordCount | sed '1s/^/United States\t\t\n/' > "$tempDir"0 
 
 cat ./covid-19-data/us-states.csv | grep $(cat ./covid-19-data/us-states.csv | tail -n 1 | cut -d',' -f1) | awk -F"," '{print $1 "," $2 "," $4 "," $5}' | sort -t"," -k $order_by_field -n -r | head -n $stateCount | cut -d',' -f2 | { 
 
@@ -124,5 +126,5 @@ cat ./covid-19-data/us-states.csv | grep $(cat ./covid-19-data/us-states.csv | t
 
 } | less 
 
-rm -rf "$tempDir"
+#rm -rf "$tempDir"
 
