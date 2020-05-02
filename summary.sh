@@ -1,9 +1,9 @@
 #!/bin/bash
 
-#tempDir=$(mktemp -d "${TMPDIR:-/tmp/}$(basename $0).XXXXXXXXXX")
-#tempDir=$tempDir"/"
+tempDir=$(mktemp -d "${TMPDIR:-/tmp/}$(basename $0).XXXXXXXXXX")
+tempDir=$tempDir"/"
 
-tempDir="./tmp/"
+#tempDir="./tmp/"
 
 #echo "Temp directory create at "$tempDir
 
@@ -126,5 +126,5 @@ cat ./covid-19-data/us-states.csv | grep $(cat ./covid-19-data/us-states.csv | t
 
 } | less 
 
-#rm -rf "$tempDir"
+rm -rf "$tempDir"
 
