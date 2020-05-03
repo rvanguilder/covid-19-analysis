@@ -20,12 +20,14 @@ git submodule update --remote
  - ./summary.sh
  - ./summary.sh -r 7
  - ./summary.sh -r 15 -s 20 -c 6 -o d
+ - ./summary.sh -a 0
 
 ### optional arguments
  - -r => (records) show last 15 days; defaults to 21
  - -s => (states) show top 20 states (mod'd up to fill all columns on last row)
  - -c => show 6 columns, defaults to how many columns can fit screen
  - -o => order by (c) cases, (d) deaths
+ - -a => calculate rolling average; (0) do not show rolling average columns; defaults to 7
 
 ## Summary for specific state
  - ./state_summary.sh -s Colorado
