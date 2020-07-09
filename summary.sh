@@ -89,7 +89,10 @@ totalSize=$(($totalSize + $columns - mod))
 
 stateCount=$(($totalSize - 1))
 
-cat ./covid-19-data/us-states.csv | awk -F"," 'BEGIN{OFS="\t"}{a[$1];c[$1]+=$4;d[$1]+=$5}END{for (i in a)print i,c[i],d[i]}' | grep "2020-[0-9]\{2\}-[0-9]\{2\}" | sort > "$tempDir"us 
+#filename="./covid-19-data/us-states-current.csv"
+filename="./covid-19-data/us-states.csv"
+
+cat "$filename" | awk -F"," 'BEGIN{OFS="\t"}{a[$1];c[$1]+=$4;d[$1]+=$5}END{for (i in a)print i,c[i],d[i]}' | grep "2020-[0-9]\{2\}-[0-9]\{2\}" | sort > "$tempDir"us 
 
 cut -d$'\t' -f1 "$tempDir"us | tail -n $recordCount | sed '1s/^/Date\t\n/' > "$tempDir"dates 
 
@@ -106,14 +109,14 @@ fi;
 
 sed -i '1s/^/'"$united_states_label"'\n/' "$tempDir"0
 
-cat ./covid-19-data/us-states.csv | grep $(cat ./covid-19-data/us-states.csv | tail -n 1 | cut -d',' -f1) | awk -F"," '{print $1 "," $2 "," $4 "," $5}' | sort -t"," -k $order_by_field -n -r | head -n $stateCount | cut -d',' -f2 | { 
+cat "$filename" | grep $(cat "$filename" | tail -n 1 | cut -d',' -f1) | awk -F"," '{print $1 "," $2 "," $4 "," $5}' | sort -t"," -k $order_by_field -n -r | head -n $stateCount | cut -d',' -f2 | { 
 
 	j=0;
 
 	while read i; 
 		do let j=j+1; 
 		
-		cat ./covid-19-data/us-states.csv | awk -F"," -v state="$i" 'BEGIN{OFS="\t"}$2==state{a[$1];c[$1]+=$4;d[$1]+=$5}END{for (i in a)print i, c[i],d[i]}' | sort | cut -d$'\t' -f2,3 | awk -f add_single_delta.awk > "$tempDir$j-1"; 
+		cat "$filename" | awk -F"," -v state="$i" 'BEGIN{OFS="\t"}$2==state{a[$1];c[$1]+=$4;d[$1]+=$5}END{for (i in a)print i, c[i],d[i]}' | sort | cut -d$'\t' -f2,3 | awk -f add_single_delta.awk > "$tempDir$j-1"; 
 
 		if [ $including_rolling_avg == 1 ];
 		then
